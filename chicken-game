@@ -1,0 +1,172 @@
+# Repository Structure:
+chicken_animation/
+├── README.md
+├── requirements.txt
+├── src/
+│   ├── __init__.py
+│   ├── main.py
+│   └── chicken.py
+└── assets/
+    └── chicken_frames/
+        └── .gitkeep
+
+# README.md
+# Chicken Animation
+A simple Python application that animates a pencil-drawn chicken using Pygame.
+
+## Features
+- Simple 2D animation of a chicken
+- Frame-by-frame animation using pencil drawings
+- Basic controls for animation playback
+
+## Installation
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/chicken-animation.git
+cd chicken-animation
+```
+
+2. Create a virtual environment and activate it:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows use: venv\Scripts\activate
+```
+
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+## Usage
+1. Add your chicken drawings to the `assets/chicken_frames` directory
+2. Run the animation:
+```bash
+python src/main.py
+```
+
+## Controls
+- SPACE: Pause/Resume animation
+- ESC: Exit
+- LEFT/RIGHT arrows: Change animation speed
+
+# requirements.txt
+pygame==2.5.2
+pillow==10.2.0
+
+# src/main.py
+import pygame
+import sys
+from chicken import ChickenAnimation
+
+def main():
+    # Initialize Pygame
+    pygame.init()
+    
+    # Set up the display
+    WINDOW_SIZE = (800, 600)
+    screen = pygame.display.set_mode(WINDOW_SIZE)
+    pygame.display.set_caption("Chicken Animation")
+    
+    # Create chicken animation instance
+    chicken = ChickenAnimation()
+    
+    # Game loop
+    clock = pygame.time.Clock()
+    running = True
+    paused = False
+    
+    while running:
+        # Event handling
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                elif event.key == pygame.K_SPACE:
+                    paused = not paused
+                elif event.key == pygame.K_LEFT:
+                    chicken.decrease_speed()
+                elif event.key == pygame.K_RIGHT:
+                    chicken.increase_speed()
+        
+        if not paused:
+            # Clear screen
+            screen.fill((255, 255, 255))
+            
+            # Update and draw chicken
+            chicken.update()
+            chicken.draw(screen)
+            
+            # Update display
+            pygame.display.flip()
+        
+        # Control frame rate
+        clock.tick(60)
+    
+    pygame.quit()
+    sys.exit()
+
+if __name__ == "__main__":
+    main()
+
+# src/chicken.py
+import pygame
+import os
+from PIL import Image
+
+class ChickenAnimation:
+    def __init__(self):
+        self.frames = []
+        self.current_frame = 0
+        self.animation_speed = 0.1
+        self.frame_counter = 0
+        
+        # Load animation frames
+        self.load_frames()
+        
+        # Set default position
+        self.x = 400
+        self.y = 300
+    
+    def load_frames(self):
+        frames_dir = os.path.join("assets", "chicken_frames")
+        frame_files = sorted([f for f in os.listdir(frames_dir) if f.endswith(('.png', '.jpg'))])
+        
+        for frame_file in frame_files:
+            frame_path = os.path.join(frames_dir, frame_file)
+            # Load and convert image to Pygame surface
+            image = Image.open(frame_path)
+            # Convert PIL image to Pygame surface
+            mode = image.mode
+            size = image.size
+            data = image.tobytes()
+            py_image = pygame.image.fromstring(data, size, mode)
+            self.frames.append(py_image)
+    
+    def update(self):
+        # Update frame counter
+        self.frame_counter += self.animation_speed
+        if self.frame_counter >= 1:
+            self.frame_counter = 0
+            self.current_frame = (self.current_frame + 1) % len(self.frames)
+    
+    def draw(self, screen):
+        if self.frames:
+            current_image = self.frames[self.current_frame]
+            # Get the rectangle for positioning
+            rect = current_image.get_rect()
+            rect.center = (self.x, self.y)
+            screen.blit(current_image, rect)
+    
+    def increase_speed(self):
+        self.animation_speed = min(self.animation_speed + 0.02, 0.5)
+    
+    def decrease_speed(self):
+        self.animation_speed = max(self.animation_speed - 0.02, 0.02)
+
+# .gitignore
+venv/
+__pycache__/
+*.pyc
+.DS_Store
