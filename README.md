@@ -160,4 +160,4 @@ If you have any questions or suggestions, feel free to:
 - Inspired by traditional animation techniques
 - Special thanks to all contributors and users
 
-Happy Animating! 🎨✨
+Make with ❤️ by https://www.kiddodrawing.com/
